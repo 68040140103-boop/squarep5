@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AR ขยับร่างกาย คณิตศาสตร์ ป.5: ความยาวรอบรูปและพื้นที่รูปสี่เหลี่ยม</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ตั้งค่าฟอนต์หลักสไตล์น่ารักสดใส อ่านง่ายสำหรับเด็ก ป.5 */
+    body {
+      font-family: 'Noto Sans Thai', 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #fff7ed 0%, #fdf2f8 48%, #ecfeff 100%);
+      color: #1e293b;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    @keyframes bounceCute {
+      0%, 100% {
+        transform: translateY(0px) scale(1);
+      }
+      50% {
+        transform: translateY(-7px) scale(1.03);
+      }
+    }
+
+    @keyframes wiggleSlow {
+      0%, 100% {
+        transform: rotate(-2deg);
+      }
+      50% {
+        transform: rotate(2deg);
+      }
+    }
+
+    @keyframes pulseRing {
+      0% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.45);
+      }
+      70% {
+        box-shadow: 0 0 0 14px rgba(236, 72, 153, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
+      }
+    }
+
+    .cute-float {
+      animation: bounceCute 2.6s ease-in-out infinite;
+    }
+
+    .cute-wiggle {
+      animation: wiggleSlow 3.2s ease-in-out infinite;
+    }
+
+    .motion-ready-ring {
+      animation: pulseRing 1.8s infinite;
+    }
+
+    /* พื้นหลังตารางพาสเทลสำหรับโหมดจำลอง AR */
+    .pastel-ar-bg {
+      background-color: #fff1f7;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(251, 207, 232, 0.75), transparent 45%),
+        radial-gradient(circle at 80% 25%, rgba(186, 230, 253, 0.75), transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(254, 240, 138, 0.65), transparent 50%),
+        linear-gradient(to right, rgba(244, 114, 182, 0.14) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.14) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- แถบแจ้งเตือนด้านบน -->
+  <div id="toastBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden w-[92%] max-w-md pointer-events-none">
+    <div id="toastInner" class="px-4 py-3 rounded-3xl shadow-xl border-2 text-xs sm:text-sm font-extrabold text-center">
+    </div>
+  </div>
+
+  <!-- ส่วนหัวธีมน่ารักสดใส -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b-2 border-pink-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <!-- มาสคอตการ์ตูนแมวน้อยนักคณิตศาสตร์ AR -->
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 via-amber-300 to-sky-400 p-0.5 shadow-md cute-wiggle">
+          <div class="w-full h-full bg-white rounded-2xl flex items-center justify-center">
+            <svg viewBox="0 0 64 64" class="w-10 h-10" aria-label="มาสคอตแมว AR">
+              <polygon points="14,24 20,8 30,20" fill="#fda4af" stroke="#1e293b" stroke-width="2.5" stroke-linejoin="round"/>
+              <polygon points="50,24 44,8 34,20" fill="#fda4af" stroke="#1e293b" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="32" cy="36" r="20" fill="#fffbeb" stroke="#1e293b" stroke-width="2.5"/>
+              <!-- แว่น AR สีฟ้าสดใส -->
+              <rect x="16" y="28" width="13" height="10" rx="4" fill="#bae6fd" stroke="#0284c7" stroke-width="2.2"/>
+              <rect x="35" y="28" width="13" height="10" rx="4" fill="#bae6fd" stroke="#0284c7" stroke-width="2.2"/>
+              <line x1="29" y1="33" x2="35" y2="33" stroke="#0284c7" stroke-width="2.2"/>
+              <!-- แก้มชมพูและยิ้ม -->
+              <circle cx="20" cy="42" r="3" fill="#fb7185" opacity="0.65"/>
+              <circle cx="44" cy="42" r="3" fill="#fb7185" opacity="0.65"/>
+              <path d="M 27 43 Q 32 48 37 43" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-xl font-extrabold text-slate-800 flex items-center gap-1.5">
+            <span>มิกกี้แคท AR ขยับคิด ป.5</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 border border-pink-300">ธีมการ์ตูน</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-semibold">
+            ความยาวรอบรูปและพื้นที่รูปสี่เหลี่ยม • โบกมือ/เอียงตัวเลือกคำตอบได้!
+          </p>
+        </div>
+      </div>
+
+      <!-- สถิติคะแนน จำนวนครั้งที่ขยับ และข้อที่เล่น -->
+      <div class="flex items-center gap-2">
+        <div class="px-3 py-1.5 rounded-2xl bg-amber-100 border-2 border-amber-300 text-amber-800 text-xs sm:text-sm font-extrabold">
+          ⭐ <span id="scoreDisplay">0</span>
+        </div>
+        <div class="px-3 py-1.5 rounded-2xl bg-pink-100 border-2 border-pink-300 text-pink-700 text-xs sm:text-sm font-extrabold">
+          🏃 <span id="moveCountDisplay">0</span> ครั้ง
+        </div>
+        <div class="px-3 py-1.5 rounded-2xl bg-sky-100 border-2 border-sky-300 text-sky-800 text-xs sm:text-sm font-extrabold">
+          ข้อ <span id="questionCounterDisplay">1/8</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col gap-4">
+
+    <!-- แถบเลือกหัวข้อ ปุ่มกล้อง AR ขยับร่างกาย และคู่มือ GitHub -->
+    <section class="bg-white/95 border-2 border-pink-200 rounded-3xl p-3 sm:p-4 shadow-md flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
+        <button id="modeAllBtn" type="button" class="px-3 sm:px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-pink-500 to-rose-400 text-white shadow transition">
+          🌈 ทั้งหมด
+        </button>
+        <button id="modePerimeterBtn" type="button" class="px-3 sm:px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-pink-50 text-pink-700 border border-pink-200 hover:bg-pink-100 transition">
+          📏 ความยาวรอบรูป
+        </button>
+        <button id="modeAreaBtn" type="button" class="px-3 sm:px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition">
+          🧩 พื้นที่สี่เหลี่ยม
+        </button>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <button id="toggleMotionCamBtn" type="button" class="motion-ready-ring px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow transition flex items-center gap-1.5">
+          <span id="camBtnIcon">📹</span>
+          <span id="camBtnText">เปิดกล้อง AR ขยับตัว</span>
+        </button>
+        <button id="toggleFormulaBtn" type="button" class="px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition">
+          📘 สูตร ป.5
+        </button>
+        <button id="toggleGithubGuideBtn" type="button" class="px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-purple-100 text-purple-800 border border-purple-300 hover:bg-purple-200 transition">
+          🚀 วิธีฝังลง GitHub
+        </button>
+        <button id="restartBtn" type="button" class="px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition">
+          🔄 เริ่มใหม่
+        </button>
+      </div>
+    </section>
+
+    <!-- แผงสูตรคณิตศาสตร์ ป.5 -->
+    <section id="formulaPanel" class="hidden bg-white border-2 border-amber-300 rounded-3xl p-4 sm:p-5 shadow-md">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-extrabold text-amber-700">📘 สรุปสูตรความยาวรอบรูปและพื้นที่รูปสี่เหลี่ยม (ป.5)</h2>
+        <button id="closeFormulaBtn" type="button" class="px-3 py-1 rounded-xl bg-amber-100 text-amber-800 text-xs font-bold hover:bg-amber-200">
+          ปิด
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm">
+        <div class="p-3.5 rounded-2xl bg-pink-50 border border-pink-200">
+          <div class="font-extrabold text-pink-600 mb-1">🐱 สี่เหลี่ยมจัตุรัส</div>
+          <p>• ความยาวรอบรูป = <strong>4 × ความยาวด้าน</strong></p>
+          <p>• พื้นที่ = <strong>ความยาวด้าน × ความยาวด้าน</strong></p>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-sky-50 border border-sky-200">
+          <div class="font-extrabold text-sky-600 mb-1">🐻 สี่เหลี่ยมผืนผ้า</div>
+          <p>• ความยาวรอบรูป = <strong>2 × (กว้าง + ยาว)</strong></p>
+          <p>• พื้นที่ = <strong>กว้าง × ยาว</strong></p>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+          <div class="font-extrabold text-emerald-600 mb-1">🐰 ด้านขนาน &amp; ขนมเปียกปูน</div>
+          <p>• ความยาวรอบรูป = <strong>บวกความยาวทั้ง 4 ด้าน</strong></p>
+          <p>• พื้นที่ = <strong>ความสูง × ความยาวฐาน</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- แผงคู่มือวิธีฝังเกม AR ลงใน GitHub (GitHub Pages + iframe embed) -->
+    <section id="githubGuidePanel" class="hidden bg-white border-2 border-purple-300 rounded-3xl p-4 sm:p-6 shadow-md">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base sm:text-lg font-extrabold text-purple-800">
+          🚀 วิธีนำเกม AR นี้ขึ้น GitHub และฝัง (Embed) ในเว็บไซต์หรือ LMS
+        </h2>
+        <button id="closeGithubGuideBtn" type="button" class="px-3 py-1 rounded-xl bg-purple-100 text-purple-800 text-xs font-bold hover:bg-purple-200">
+          ปิดคู่มือ
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm text-slate-700 leading-relaxed">
+        <div class="p-3.5 rounded-2xl bg-purple-50 border border-purple-200">
+          <div class="font-extrabold text-purple-800 mb-1">ขั้นตอนที่ 1: สร้าง Repository และอัปโหลดไฟล์ลง GitHub</div>
+          <p>
+            1. เข้าสู่ระบบ <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-purple-600 underline font-bold">GitHub.com</a> แล้วกด <strong>New repository</strong> ตั้งชื่อ เช่น <code class="px-1.5 py-0.5 rounded bg-white border">ar-quad-math-p5</code> (เลือกเป็น <strong>Public</strong>)<br>
+            2. บันทึกไฟล์เกมนี้เป็นชื่อ <code class="px-1.5 py-0.5 rounded bg-white border">index.html</code> แล้วกด <strong>Add file &gt; Upload files</strong> ลากไฟล์ <code class="px-1.5 py-0.5 rounded bg-white border">index.html</code> ขึ้นไป แล้วกด <strong>Commit changes</strong>
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-sky-50 border border-sky-200">
+          <div class="font-extrabold text-sky-800 mb-1">ขั้นตอนที่ 2: เปิดใช้งาน GitHub Pages (จำเป็นสำหรับกล้อง AR บนเว็บ!)</div>
+          <p>
+            ไปที่แท็บ <strong>Settings &gt; Pages</strong> ในหัวข้อ <strong>Build and deployment &gt; Branch</strong> ให้เลือก <code class="px-1.5 py-0.5 rounded bg-white border">main</code> และโฟลเดอร์ <code class="px-1.5 py-0.5 rounded bg-white border">/ (root)</code> แล้วกด <strong>Save</strong> รอประมาณ 1–2 นาที จะได้ลิงก์แบบ HTTPS เช่น:<br>
+            <code class="block mt-1.5 p-2 rounded-xl bg-white border border-sky-200 text-sky-900 font-semibold">https://ชื่อผู้ใช้ของคุณ.github.io/ar-quad-math-p5/</code>
+            <span class="text-xs text-emerald-700 font-bold block mt-1">💡 หมายเหตุ: GitHub Pages ใช้ HTTPS โดยอัตโนมัติ ทำให้เบราว์เซอร์อนุญาตให้เปิดกล้อง AR ได้อย่างปลอดภัย</span>
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-pink-50 border border-pink-200">
+          <div class="font-extrabold text-pink-800 mb-1">ขั้นตอนที่ 3: คัดลอกโค้ด &lt;iframe&gt; ไปฝัง (Embed) ใน Google Sites / เว็บโรงเรียน / Moodle</div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-1.5">
+            <code id="embedSnippetCode" class="block flex-1 p-2.5 rounded-xl bg-white border border-pink-200 text-slate-800 text-xs overflow-x-auto">&lt;iframe src="https://YOUR-USERNAME.github.io/ar-quad-math-p5/" width="100%" height="760" style="border:0; border-radius:20px;" allow="camera; microphone; fullscreen" loading="lazy"&gt;&lt;/iframe&gt;</code>
+            <button id="copyEmbedBtn" type="button" class="shrink-0 px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-extrabold text-xs transition">
+              📋 คัดลอกโค้ดฝัง
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- พื้นที่เล่นเกมหลัก -->
+    <div id="gameArea" class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- คอลัมน์ซ้าย: สนาม AR ขยับร่างกาย + การ์ตูนน่ารัก + เป้าคำตอบ 4 มุม -->
+      <section class="lg:col-span-7 bg-white border-2 border-pink-200 rounded-3xl overflow-hidden shadow-lg">
+        <!-- แถบสถานะกล้องและท่าขยับร่างกาย -->
+        <div class="px-4 py-3 bg-gradient-to-r from-pink-50 via-amber-50 to-sky-50 border-b-2 border-pink-100 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span id="motionStatusDot" class="w-3 h-3 rounded-full bg-amber-400"></span>
+            <span id="motionStatusText" class="text-xs sm:text-sm font-extrabold text-slate-700">
+              โหมดจำลอง AR ขยับตัว • โบกมือหรือคลิก/แตะที่การ์ตูนคำตอบได้เลย!
+            </span>
+          </div>
+          <span class="text-xs font-bold text-pink-600 bg-pink-100 px-2.5 py-1 rounded-full">
+            ค้างท่า 1.2 วิ เพื่อเลือก
+          </span>
+        </div>
+
+        <!-- กรอบแสดงผล AR ขยับร่างกาย -->
+        <div id="arStage" class="relative w-full h-[390px] sm:h-[445px] pastel-ar-bg overflow-hidden flex flex-col justify-between p-3 sm:p-4">
+          <!-- วิดีโอกล้องจริง (สะท้อนภาพแบบกระจก mirror เพื่อให้เด็กขยับซ้าย-ขวาได้ง่าย) -->
+          <video id="motionVideo" autoplay playsinline muted class="hidden absolute inset-0 w-full h-full object-cover -scale-x-100"></video>
+          <canvas id="motionDiffCanvas" class="hidden"></canvas>
+
+          <!-- เลเยอร์นวลบางๆ เมื่อเปิดกล้องจริง เพื่อให้อ่านตัวเลขชัดเจน -->
+          <div id="cameraSoftOverlay" class="hidden absolute inset-0 bg-white/30 pointer-events-none"></div>
+
+          <!-- แถบตัวเลือกคำตอบแบบโซนขยับร่างกายด้านบน 2 ช่อง (ซ้ายบน / ขวาบน) -->
+          <div class="relative z-20 grid grid-cols-2 gap-2 sm:gap-3">
+            <button type="button" data-zone-index="0" class="ar-zone-btn group relative bg-white/95 hover:bg-pink-50 border-3 border-pink-300 rounded-2xl p-2 sm:p-2.5 shadow-md transition text-left overflow-hidden">
+              <div class="ar-zone-progress absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-pink-400 to-amber-400 w-0 transition-all duration-75"></div>
+              <div class="flex items-center justify-between text-[11px] font-extrabold text-pink-600">
+                <span>🙋‍♀️ ชู/โบก ซ้ายบน</span>
+                <span class="px-1.5 py-0.5 rounded bg-pink-100">A</span>
+              </div>
+              <div id="zoneLabel0" class="mt-0.5 text-sm sm:text-base font-extrabold text-slate-800 truncate">-</div>
+            </button>
+
+            <button type="button" data-zone-index="1" class="ar-zone-btn group relative bg-white/95 hover:bg-sky-50 border-3 border-sky-300 rounded-2xl p-2 sm:p-2.5 shadow-md transition text-left overflow-hidden">
+              <div class="ar-zone-progress absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-sky-400 to-emerald-400 w-0 transition-all duration-75"></div>
+              <div class="flex items-center justify-between text-[11px] font-extrabold text-sky-600">
+                <span>🙋‍♂️ ชู/โบก ขวาบน</span>
+                <span class="px-1.5 py-0.5 rounded bg-sky-100">B</span>
+              </div>
+              <div id="zoneLabel1" class="mt-0.5 text-sm sm:text-base font-extrabold text-slate-800 truncate">-</div>
+            </button>
+          </div>
+
+          <!-- ศูนย์กลาง AR: รูปสี่เหลี่ยมการ์ตูน + มาสคอตให้กำลังใจ -->
+          <div class="relative z-10 flex-1 flex items-center justify-center my-1 pointer-events-none">
+            <div class="cute-float w-full max-w-[380px] h-[200px] sm:h-[225px] bg-white/85 backdrop-blur-sm rounded-3xl border-2 border-white shadow-lg flex items-center justify-center p-2 relative">
+              <svg id="cuteQuadSvg" viewBox="0 0 380 220" class="w-full h-full">
+                <!-- วาดรูปสี่เหลี่ยมน่ารักด้วย JavaScript -->
+              </svg>
+              <!-- มาสคอตน่ารักมุมล่างขวาในกรอบรูป -->
+              <div class="hidden sm:flex items-center gap-1.5 bg-amber-100/95 border border-amber-300 rounded-2xl px-2.5 py-1 shadow-sm absolute bottom-2 right-2">
+                <span class="text-base">🐱</span>
+                <span id="mascotCheerText" class="text-[11px] font-extrabold text-amber-900">ขยับตัวหรือแตะคำตอบเลย!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- แถบตัวเลือกคำตอบแบบโซนขยับร่างกายด้านล่าง 2 ช่อง (ซ้ายล่าง / ขวาล่าง) -->
+          <div class="relative z-20 grid grid-cols-2 gap-2 sm:gap-3">
+            <button type="button" data-zone-index="2" class="ar-zone-btn group relative bg-white/95 hover:bg-amber-50 border-3 border-amber-300 rounded-2xl p-2 sm:p-2.5 shadow-md transition text-left overflow-hidden">
+              <div class="ar-zone-progress absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-amber-400 to-orange-400 w-0 transition-all duration-75"></div>
+              <div class="flex items-center justify-between text-[11px] font-extrabold text-amber-700">
+                <span>🦶 ย่อ/ขยับ ซ้ายล่าง</span>
+                <span class="px-1.5 py-0.5 rounded bg-amber-100">C</span>
+              </div>
+              <div id="zoneLabel2" class="mt-0.5 text-sm sm:text-base font-extrabold text-slate-800 truncate">-</div>
+            </button>
+
+            <button type="button" data-zone-index="3" class="ar-zone-btn group relative bg-white/95 hover:bg-emerald-50 border-3 border-emerald-300 rounded-2xl p-2 sm:p-2.5 shadow-md transition text-left overflow-hidden">
+              <div class="ar-zone-progress absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-emerald-400 to-teal-400 w-0 transition-all duration-75"></div>
+              <div class="flex items-center justify-between text-[11px] font-extrabold text-emerald-700">
+                <span>🦶 ย่อ/ขยับ ขวาล่าง</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-100">D</span>
+              </div>
+              <div id="zoneLabel3" class="mt-0.5 text-sm sm:text-base font-extrabold text-slate-800 truncate">-</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- แถบคำแนะนำท่าขยับร่างกายและปุ่มขอคำใบ้ -->
+        <div class="p-4 bg-pink-50/70 border-t-2 border-pink-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div id="motionPromptText" class="text-xs sm:text-sm font-extrabold text-pink-700">
+              🤸‍♀️ ท่าขยับแนะนำ: ยืนห่างหน้าจอเล็กน้อย แล้วโบกมือหรือขยับตัวไปทางคำตอบที่ถูก!
+            </div>
+            <p id="storyCaption" class="text-xs text-slate-600 mt-0.5">
+              กำลังโหลดสถานการณ์น่ารักๆ...
+            </p>
+          </div>
+          <button id="hintBtn" type="button" class="shrink-0 px-4 py-2 rounded-2xl bg-amber-300 hover:bg-amber-400 text-amber-950 font-extrabold text-xs sm:text-sm shadow-sm transition">
+            💡 ขอคำใบ้ (-5)
+          </button>
+        </div>
+      </section>
+
+      <!-- คอลัมน์ขวา: โจทย์คณิตศาสตร์ ป.5 + ปุ่มตอบแบบสัมผัส/คลิก + เฉลย -->
+      <section class="lg:col-span-5 bg-white border-2 border-sky-200 rounded-3xl p-4 sm:p-6 shadow-lg flex flex-col gap-4">
+        <div class="flex items-center justify-between gap-2">
+          <span id="categoryBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-pink-100 text-pink-700 border border-pink-300">
+            ความยาวรอบรูป
+          </span>
+          <span id="shapeBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-sky-100 text-sky-700 border border-sky-300">
+            รูปสี่เหลี่ยมผืนผ้า
+          </span>
+        </div>
+
+        <div>
+          <h2 id="questionText" class="text-lg sm:text-xl font-extrabold text-slate-800 leading-snug">
+            กำลังเตรียมคำถาม...
+          </h2>
+          <p id="formulaHintSub" class="text-xs sm:text-sm text-slate-500 mt-1 font-semibold">
+            ดูรูปสี่เหลี่ยมทางซ้าย แล้วเลือกคำตอบที่ถูกต้องได้เลย
+          </p>
+        </div>
+
+        <div id="hintBox" class="hidden rounded-2xl bg-amber-50 border-2 border-amber-300 p-3.5 text-xs sm:text-sm font-bold text-amber-900">
+        </div>
+
+        <!-- ปุ่มคำตอบ 4 ช่องสำหรับกด/แตะโดยตรง -->
+        <div id="answerButtonsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        </div>
+
+        <!-- กล่องผลตอบรับและวิธีคิด -->
+        <div id="feedbackCard" class="hidden rounded-2xl p-4 border-2 text-xs sm:text-sm leading-relaxed">
+          <div id="feedbackTitle" class="font-extrabold text-sm sm:text-base mb-1"></div>
+          <div id="feedbackDetail" class="font-semibold text-slate-700"></div>
+        </div>
+
+        <button id="nextBtn" type="button" class="hidden w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-pink-500 via-amber-400 to-sky-500 hover:brightness-105 text-white font-extrabold text-base shadow-md transition">
+          ไปข้อถัดไปเลย! 🎉
+        </button>
+      </section>
+    </div>
+
+    <!-- หน้าสรุปผลเมื่อเล่นครบ -->
+    <section id="summaryCard" class="hidden max-w-2xl w-full mx-auto bg-white border-2 border-pink-300 rounded-3xl p-6 sm:p-8 text-center shadow-xl">
+      <div class="text-5xl mb-3 cute-float">🏅🐱🎉</div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1">
+        เก่งมากเลย! ภารกิจ AR ขยับคิดสำเร็จแล้ว
+      </h2>
+      <p id="summaryBadgeText" class="text-sm sm:text-base font-extrabold text-pink-600 mb-5">
+        ยอดนักสำรวจรูปสี่เหลี่ยม ป.5 สุดน่ารัก
+      </p>
+
+      <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="p-3.5 rounded-2xl bg-amber-50 border-2 border-amber-200">
+          <div class="text-xs text-amber-700 font-bold">คะแนนรวม</div>
+          <div id="summaryScore" class="text-xl sm:text-2xl font-extrabold text-amber-600">0</div>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-emerald-50 border-2 border-emerald-200">
+          <div class="text-xs text-emerald-700 font-bold">ตอบถูก</div>
+          <div id="summaryCorrect" class="text-xl sm:text-2xl font-extrabold text-emerald-600">0/8</div>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-pink-50 border-2 border-pink-200">
+          <div class="text-xs text-pink-700 font-bold">ขยับร่างกาย</div>
+          <div id="summaryMoves" class="text-xl sm:text-2xl font-extrabold text-pink-600">0 ครั้ง</div>
+        </div>
+      </div>
+
+      <button id="playAgainBtn" type="button" class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-sky-500 text-white font-extrabold text-base shadow-md hover:brightness-105 transition">
+        เล่นอีกรอบสิ! 🔄
+      </button>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * คลังโจทย์คณิตศาสตร์ ป.5 ธีมน่ารักสดใส เรื่องความยาวรอบรูปและพื้นที่ของรูปสี่เหลี่ยม
+     */
+    const QUESTIONS = [
+      {
+        id: 1,
+        category: 'perimeter',
+        shape: 'rectangle',
+        shapeLabel: 'รูปสี่เหลี่ยมผืนผ้า',
+        story: 'น้องแมวมิกกี้วาดกล่องของขวัญสี่เหลี่ยมผืนผ้า กว้าง 10 ซม. ยาว 18 ซม. จะติดริบบิ้นรอบกล่อง',
+        question: 'กล่องของขวัญนี้ต้องใช้ริบบิ้นยาวกี่เซนติเมตร?',
+        subtext: 'ความยาวรอบรูปสี่เหลี่ยมผืนผ้า = 2 × (กว้าง + ยาว)',
+        params: { width: 10, length: 18, unit: 'ซม.' },
+        answer: '56 ซม.',
+        choices: ['56 ซม.', '28 ซม.', '180 ซม.', '36 ซม.'],
+        hint: 'นำ 10 + 18 ได้ 28 แล้วคูณ 2 นะเหมียว~',
+        explanation: 'ความยาวรอบรูป = 2 × (10 + 18) = 2 × 28 = 56 ซม.'
+      },
+      {
+        id: 2,
+        category: 'area',
+        shape: 'square',
+        shapeLabel: 'รูปสี่เหลี่ยมจัตุรัส',
+        story: 'แผ่นเสื่อโยคะสี่เหลี่ยมจัตุรัสสีชมพูของกระต่ายน้อย มีด้านยาวด้านละ 8 ซม.',
+        question: 'แผ่นเสื่อสี่เหลี่ยมจัตุรัสนี้มีพื้นที่เท่าไร?',
+        subtext: 'พื้นที่รูปสี่เหลี่ยมจัตุรัส = ความยาวด้าน × ความยาวด้าน',
+        params: { side: 8, unit: 'ซม.' },
+        answer: '64 ตร.ซม.',
+        choices: ['32 ตร.ซม.', '64 ตร.ซม.', '16 ตร.ซม.', '48 ตร.ซม.'],
+        hint: 'เอาความยาวด้านมาคูณกันเอง: 8 × 8 ได้เท่าไรนะ?',
+        explanation: 'พื้นที่รูปสี่เหลี่ยมจัตุรัส = 8 × 8 = 64 ตร.ซม.'
+      },
+      {
+        id: 3,
+        category: 'area',
+        shape: 'rectangle',
+        shapeLabel: 'รูปสี่เหลี่ยมผืนผ้า',
+        story: 'แปลงแครอทสี่เหลี่ยมผืนผ้าของเจ้าหมี กว้าง 7 ม. ยาว 12 ม.',
+        question: 'แปลงแครอทนี้มีพื้นที่กี่ตารางเมตร?',
+        subtext: 'พื้นที่รูปสี่เหลี่ยมผืนผ้า = ความกว้าง × ความยาว',
+        params: { width: 7, length: 12, unit: 'ม.' },
+        answer: '84 ตร.ม.',
+        choices: ['38 ตร.ม.', '84 ตร.ม.', '19 ตร.ม.', '72 ตร.ม.'],
+        hint: 'คูณความกว้าง (7) กับความยาว (12) เข้าด้วยกันเลย!',
+        explanation: 'พื้นที่รูปสี่เหลี่ยมผืนผ้า = 7 × 12 = 84 ตร.ม.'
+      },
+      {
+        id: 4,
+        category: 'perimeter',
+        shape: 'square',
+        shapeLabel: 'รูปสี่เหลี่ยมจัตุรัส',
+        story: 'กรอบรูปครอบครัวสี่เหลี่ยมจัตุรัส มีความยาวด้านละ 15 ซม.',
+        question: 'กรอบรูปนี้มีความยาวรอบรูปเท่าไร?',
+        subtext: 'สี่เหลี่ยมจัตุรัสมี 4 ด้านที่ยาวเท่ากัน',
+        params: { side: 15, unit: 'ซม.' },
+        answer: '60 ซม.',
+        choices: ['30 ซม.', '45 ซม.', '60 ซม.', '225 ซม.'],
+        hint: 'ความยาวรอบรูป = 4 × 15 ได้เท่าไรเอ่ย?',
+        explanation: 'ความยาวรอบรูป = 4 × 15 = 60 ซม.'
+      },
+      {
+        id: 5,
+        category: 'area',
+        shape: 'parallelogram',
+        shapeLabel: 'รูปสี่เหลี่ยมด้านขนาน',
+        story: 'ป้ายบอกทางรูปสี่เหลี่ยมด้านขนาน มีฐานยาว 14 ซม. สูง 6 ซม. (ด้านเอียงยาว 9 ซม.)',
+        question: 'ป้ายรูปสี่เหลี่ยมด้านขนานนี้มีพื้นที่เท่าไร?',
+        subtext: 'พื้นที่รูปสี่เหลี่ยมด้านขนาน = ความสูง × ความยาวฐาน',
+        params: { base: 14, height: 6, slant: 9, unit: 'ซม.' },
+        answer: '84 ตร.ซม.',
+        choices: ['46 ตร.ซม.', '126 ตร.ซม.', '84 ตร.ซม.', '20 ตร.ซม.'],
+        hint: 'ใช้ "สูง (6)" คูณกับ "ฐาน (14)" นะ ไม่ใช้ด้านเอียง 9 ครับ',
+        explanation: 'พื้นที่ = ความสูง × ความยาวฐาน = 6 × 14 = 84 ตร.ซม.'
+      },
+      {
+        id: 6,
+        category: 'perimeter',
+        shape: 'parallelogram',
+        shapeLabel: 'รูปสี่เหลี่ยมด้านขนาน',
+        story: 'แปลงดอกไม้รูปสี่เหลี่ยมด้านขนาน ด้านฐานยาว 16 ม. และด้านเอียงยาว 10 ม.',
+        question: 'แปลงดอกไม้รูปสี่เหลี่ยมด้านขนานนี้มีความยาวรอบรูปเท่าไร?',
+        subtext: 'นำความยาวด้านทั้ง 4 ด้านมาบวกกัน',
+        params: { base: 16, height: 8, slant: 10, unit: 'ม.' },
+        answer: '52 ม.',
+        choices: ['26 ม.', '52 ม.', '128 ม.', '160 ม.'],
+        hint: 'มีด้านยาว 16 ม. สองด้าน และด้านยาว 10 ม. สองด้าน รวมกันได้เท่าไร?',
+        explanation: 'ความยาวรอบรูป = 2 × (16 + 10) = 2 × 26 = 52 ม.'
+      },
+      {
+        id: 7,
+        category: 'area',
+        shape: 'rhombus',
+        shapeLabel: 'รูปสี่เหลี่ยมขนมเปียกปูน',
+        story: 'ว่าวสีรุ้งรูปสี่เหลี่ยมขนมเปียกปูน มีด้านยาวด้านละ 12 ซม. และสูง 9 ซม.',
+        question: 'ว่าวรูปสี่เหลี่ยมขนมเปียกปูนนี้มีพื้นที่เท่าไร?',
+        subtext: 'พื้นที่รูปสี่เหลี่ยมขนมเปียกปูน = ความสูง × ความยาวฐาน',
+        params: { side: 12, height: 9, unit: 'ซม.' },
+        answer: '108 ตร.ซม.',
+        choices: ['48 ตร.ซม.', '108 ตร.ซม.', '21 ตร.ซม.', '54 ตร.ซม.'],
+        hint: 'คูณความสูง (9) กับความยาวด้าน (12) ได้เท่าไรนะ?',
+        explanation: 'พื้นที่ = 9 × 12 = 108 ตร.ซม.'
+      },
+      {
+        id: 8,
+        category: 'perimeter',
+        shape: 'rhombus',
+        shapeLabel: 'รูปสี่เหลี่ยมขนมเปียกปูน',
+        story: 'ลานกระโดดรูปสี่เหลี่ยมขนมเปียกปูน มีด้านยาวเท่ากันทั้ง 4 ด้าน ด้านละ 20 ม.',
+        question: 'ลานกระโดดนี้มีความยาวรอบรูปกี่เมตร?',
+        subtext: 'สี่เหลี่ยมขนมเปียกปูนมี 4 ด้านยาวเท่ากัน',
+        params: { side: 20, height: 12, unit: 'ม.' },
+        answer: '80 ม.',
+        choices: ['40 ม.', '60 ม.', '80 ม.', '240 ม.'],
+        hint: 'นำ 4 คูณกับความยาวด้าน 20 ได้เลย!',
+        explanation: 'ความยาวรอบรูป = 4 × 20 = 80 ม.'
+      }
+    ];
+
+    const gameState = {
+      mode: 'all',
+      deck: [],
+      index: 0,
+      score: 0,
+      moveCount: 0,
+      correctCount: 0,
+      answered: false,
+      hintUsed: false,
+      cameraOn: false,
+      stream: null,
+      motionTimer: null,
+      prevFrame: null,
+      zoneHoldProgress: [0, 0, 0, 0]
+    };
+
+    const el = {
+      toastBanner: document.getElementById('toastBanner'),
+      toastInner: document.getElementById('toastInner'),
+      scoreDisplay: document.getElementById('scoreDisplay'),
+      moveCountDisplay: document.getElementById('moveCountDisplay'),
+      questionCounterDisplay: document.getElementById('questionCounterDisplay'),
+      modeAllBtn: document.getElementById('modeAllBtn'),
+      modePerimeterBtn: document.getElementById('modePerimeterBtn'),
+      modeAreaBtn: document.getElementById('modeAreaBtn'),
+      toggleMotionCamBtn: document.getElementById('toggleMotionCamBtn'),
+      camBtnIcon: document.getElementById('camBtnIcon'),
+      camBtnText: document.getElementById('camBtnText'),
+      toggleFormulaBtn: document.getElementById('toggleFormulaBtn'),
+      formulaPanel: document.getElementById('formulaPanel'),
+      closeFormulaBtn: document.getElementById('closeFormulaBtn'),
+      toggleGithubGuideBtn: document.getElementById('toggleGithubGuideBtn'),
+      githubGuidePanel: document.getElementById('githubGuidePanel'),
+      closeGithubGuideBtn: document.getElementById('closeGithubGuideBtn'),
+      copyEmbedBtn: document.getElementById('copyEmbedBtn'),
+      embedSnippetCode: document.getElementById('embedSnippetCode'),
+      restartBtn: document.getElementById('restartBtn'),
+      gameArea: document.getElementById('gameArea'),
+      summaryCard: document.getElementById('summaryCard'),
+      motionStatusDot: document.getElementById('motionStatusDot'),
+      motionStatusText: document.getElementById('motionStatusText'),
+      arStage: document.getElementById('arStage'),
+      motionVideo: document.getElementById('motionVideo'),
+      motionDiffCanvas: document.getElementById('motionDiffCanvas'),
+      cameraSoftOverlay: document.getElementById('cameraSoftOverlay'),
+      cuteQuadSvg: document.getElementById('cuteQuadSvg'),
+      mascotCheerText: document.getElementById('mascotCheerText'),
+      motionPromptText: document.getElementById('motionPromptText'),
+      storyCaption: document.getElementById('storyCaption'),
+      hintBtn: document.getElementById('hintBtn'),
+      hintBox: document.getElementById('hintBox'),
+      categoryBadge: document.getElementById('categoryBadge'),
+      shapeBadge: document.getElementById('shapeBadge'),
+      questionText: document.getElementById('questionText'),
+      formulaHintSub: document.getElementById('formulaHintSub'),
+      answerButtonsGrid: document.getElementById('answerButtonsGrid'),
+      feedbackCard: document.getElementById('feedbackCard'),
+      feedbackTitle: document.getElementById('feedbackTitle'),
+      feedbackDetail: document.getElementById('feedbackDetail'),
+      nextBtn: document.getElementById('nextBtn'),
+      summaryBadgeText: document.getElementById('summaryBadgeText'),
+      summaryScore: document.getElementById('summaryScore'),
+      summaryCorrect: document.getElementById('summaryCorrect'),
+      summaryMoves: document.getElementById('summaryMoves'),
+      playAgainBtn: document.getElementById('playAgainBtn')
+    };
+
+    const zoneButtons = Array.from(document.querySelectorAll('.ar-zone-btn'));
+    const zoneProgressBars = Array.from(document.querySelectorAll('.ar-zone-progress'));
+    const zoneLabels = [
+      document.getElementById('zoneLabel0'),
+      document.getElementById('zoneLabel1'),
+      document.getElementById('zoneLabel2'),
+      document.getElementById('zoneLabel3')
+    ];
+
+    let toastTimer = null;
+
+    function notify(msg, tone = 'pink') {
+      if (toastTimer) clearTimeout(toastTimer);
+      const map = {
+        pink: 'bg-pink-50 border-pink-300 text-pink-800',
+        sky: 'bg-sky-50 border-sky-300 text-sky-800',
+        success: 'bg-emerald-50 border-emerald-400 text-emerald-800',
+        warn: 'bg-amber-50 border-amber-400 text-amber-900',
+        error: 'bg-rose-50 border-rose-400 text-rose-800'
+      };
+      el.toastInner.className = `px-4 py-3 rounded-3xl shadow-xl border-2 text-xs sm:text-sm font-extrabold text-center ${map[tone] || map.pink}`;
+      el.toastInner.textContent = msg;
+      el.toastBanner.classList.remove('hidden');
+      toastTimer = setTimeout(() => el.toastBanner.classList.add('hidden'), 2800);
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function buildDeck(mode) {
+      let base = QUESTIONS;
+      if (mode === 'perimeter') base = QUESTIONS.filter(q => q.category === 'perimeter');
+      if (mode === 'area') base = QUESTIONS.filter(q => q.category === 'area');
+      const primary = shuffle(base);
+      if (primary.length >= 6) {
+        return primary.map(q => ({ ...q, choices: shuffle(q.choices) }));
+      }
+      const filler = shuffle(QUESTIONS.filter(q => !primary.some(p => p.id === q.id)));
+      return [...primary, ...filler.slice(0, 6 - primary.length)].map(q => ({ ...q, choices: shuffle(q.choices) }));
+    }
+
+    function syncHud() {
+      el.scoreDisplay.textContent = gameState.score;
+      el.moveCountDisplay.textContent = gameState.moveCount;
+      const total = Math.max(gameState.deck.length, 1);
+      const cur = Math.min(gameState.index + 1, total);
+      el.questionCounterDisplay.textContent = `${cur}/${total}`;
+    }
+
+    function resetZoneBars() {
+      gameState.zoneHoldProgress = [0, 0, 0, 0];
+      zoneProgressBars.forEach(bar => {
+        bar.style.width = '0%';
+      });
+    }
+
+    /**
+     * วาดรูปสี่เหลี่ยมสไตล์การ์ตูนสดใสพร้อมหน้ายิ้มและป้ายขนาด
+     */
+    function drawCuteShape(q) {
+      const { shape, params } = q;
+      let body = '';
+
+      if (shape === 'rectangle') {
+        body = `
+          <rect x="95" y="54" width="190" height="116" rx="16" fill="#bae6fd" stroke="#0284c7" stroke-width="4"/>
+          <circle cx="168" cy="108" r="5" fill="#1e293b"/>
+          <circle cx="212" cy="108" r="5" fill="#1e293b"/>
+          <circle cx="158" cy="116" r="5" fill="#fb7185" opacity="0.6"/>
+          <circle cx="222" cy="116" r="5" fill="#fb7185" opacity="0.6"/>
+          <path d="M 180 116 Q 190 126 200 116" fill="none" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+          <text x="190" y="38" text-anchor="middle" fill="#0f172a" font-size="16" font-weight="800">ยาว ${params.length} ${params.unit}</text>
+          <text x="84" y="116" text-anchor="end" fill="#0369a1" font-size="15" font-weight="800">กว้าง ${params.width} ${params.unit}</text>
+        `;
+      } else if (shape === 'square') {
+        body = `
+          <rect x="130" y="50" width="120" height="120" rx="18" fill="#fbcfe8" stroke="#db2777" stroke-width="4"/>
+          <circle cx="172" cy="106" r="5" fill="#1e293b"/>
+          <circle cx="208" cy="106" r="5" fill="#1e293b"/>
+          <path d="M 181 115 Q 190 124 199 115" fill="none" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+          <text x="190" y="34" text-anchor="middle" fill="#0f172a" font-size="16" font-weight="800">ด้านละ ${params.side} ${params.unit}</text>
+          <text x="118" y="114" text-anchor="end" fill="#be185d" font-size="15" font-weight="800">${params.side} ${params.unit}</text>
+        `;
+      } else if (shape === 'parallelogram') {
+        body = `
+          <polygon points="135,56 285,56 250,164 100,164" fill="#fef08a" stroke="#ca8a04" stroke-width="4" stroke-linejoin="round"/>
+          <line x1="135" y1="56" x2="135" y2="164" stroke="#ec4899" stroke-width="3" stroke-dasharray="5,4"/>
+          <text x="125" y="115" text-anchor="end" fill="#be185d" font-size="15" font-weight="800">สูง ${params.height} ${params.unit}</text>
+          <text x="175" y="190" text-anchor="middle" fill="#0f172a" font-size="16" font-weight="800">ฐาน ${params.base} ${params.unit}</text>
+          <text x="278" y="115" text-anchor="start" fill="#0369a1" font-size="15" font-weight="800">เอียง ${params.slant} ${params.unit}</text>
+        `;
+      } else if (shape === 'rhombus') {
+        body = `
+          <polygon points="140,54 275,54 240,162 105,162" fill="#bbf7d0" stroke="#16a34a" stroke-width="4" stroke-linejoin="round"/>
+          <line x1="140" y1="54" x2="140" y2="162" stroke="#f97316" stroke-width="3" stroke-dasharray="5,4"/>
+          <text x="130" y="112" text-anchor="end" fill="#c2410c" font-size="15" font-weight="800">สูง ${params.height} ${params.unit}</text>
+          <text x="208" y="38" text-anchor="middle" fill="#0f172a" font-size="16" font-weight="800">ด้าน ${params.side} ${params.unit}</text>
+          <text x="172" y="188" text-anchor="middle" fill="#15803d" font-size="15" font-weight="800">ด้าน ${params.side} ${params.unit}</text>
+        `;
+      }
+
+      el.cuteQuadSvg.innerHTML = body;
+    }
+
+    function renderQuestion() {
+      const q = gameState.deck[gameState.index];
+      if (!q) return;
+
+      gameState.answered = false;
+      gameState.hintUsed = false;
+      resetZoneBars();
+      syncHud();
+
+      drawCuteShape(q);
+      el.storyCaption.textContent = q.story;
+      el.questionText.textContent = q.question;
+      el.formulaHintSub.textContent = q.subtext;
+      el.shapeBadge.textContent = q.shapeLabel;
+
+      const isPerim = q.category === 'perimeter';
+      el.categoryBadge.textContent = isPerim ? '📏 ความยาวรอบรูป' : '🧩 พื้นที่รูปสี่เหลี่ยม';
+      el.categoryBadge.className = isPerim
+        ? 'px-3 py-1 rounded-full text-xs font-extrabold bg-pink-100 text-pink-700 border border-pink-300'
+        : 'px-3 py-1 rounded-full text-xs font-extrabold bg-sky-100 text-sky-700 border border-sky-300';
+
+      el.motionPromptText.textContent = isPerim
+        ? '🤸‍♀️ ท่าขยับแนะนำ: ยื่นแขนหรือโบกมือไปทางคำตอบความยาวรอบรูปที่ถูกต้อง!'
+        : '💃 ท่าขยับแนะนำ: ขยับตัวหรือโบกมือไปทางคำตอบพื้นที่รูปสี่เหลี่ยมที่ถูกต้อง!';
+      el.mascotCheerText.textContent = 'ขยับตัวหรือแตะคำตอบเลย!';
+
+      el.hintBox.classList.add('hidden');
+      el.hintBtn.disabled = false;
+      el.hintBtn.classList.remove('opacity-50');
+      el.feedbackCard.classList.add('hidden');
+      el.nextBtn.classList.add('hidden');
+
+      el.answerButtonsGrid.innerHTML = '';
+      const tagLetters = ['A', 'B', 'C', 'D'];
+
+      q.choices.forEach((choice, idx) => {
+        if (zoneLabels[idx]) zoneLabels[idx].textContent = choice;
+        if (zoneButtons[idx]) {
+          zoneButtons[idx].disabled = false;
+          zoneButtons[idx].classList.remove('opacity-50', 'ring-4', 'ring-emerald-400', 'ring-rose-400');
+        }
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ans-direct-btn p-3.5 rounded-2xl bg-sky-50 hover:bg-pink-50 border-2 border-sky-200 hover:border-pink-400 text-slate-800 font-extrabold text-sm sm:text-base transition flex items-center justify-between gap-2 shadow-sm';
+        btn.innerHTML = `<span class="px-2 py-0.5 rounded-lg bg-white border border-sky-200 text-xs text-sky-700">${tagLetters[idx]}</span><span>${choice}</span>`;
+        btn.addEventListener('click', () => submitAnswer(choice, 'touch/click'));
+        el.answerButtonsGrid.appendChild(btn);
+      });
+    }
+
+    function submitAnswer(chosenText, via = 'touch/click') {
+      if (gameState.answered) return;
+      const q = gameState.deck[gameState.index];
+      if (!q) return;
+
+      gameState.answered = true;
+      resetZoneBars();
+
+      if (via === 'motion') {
+        gameState.moveCount += 1;
+      }
+
+      const isRight = chosenText === q.answer;
+      const directBtns = el.answerButtonsGrid.querySelectorAll('.ans-direct-btn');
+
+      directBtns.forEach(btn => {
+        btn.disabled = true;
+        const textOnly = btn.lastElementChild ? btn.lastElementChild.textContent : btn.textContent;
+        if (textOnly === q.answer) {
+          btn.className = 'ans-direct-btn p-3.5 rounded-2xl bg-emerald-100 border-2 border-emerald-500 text-emerald-900 font-extrabold text-sm sm:text-base flex items-center justify-between gap-2';
+        } else if (textOnly === chosenText && !isRight) {
+          btn.className = 'ans-direct-btn p-3.5 rounded-2xl bg-rose-100 border-2 border-rose-500 text-rose-900 font-extrabold text-sm sm:text-base flex items-center justify-between gap-2';
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+
+      q.choices.forEach((choice, idx) => {
+        const zBtn = zoneButtons[idx];
+        if (!zBtn) return;
+        zBtn.disabled = true;
+        if (choice === q.answer) {
+          zBtn.classList.add('ring-4', 'ring-emerald-400');
+        } else if (choice === chosenText && !isRight) {
+          zBtn.classList.add('ring-4', 'ring-rose-400');
+        } else {
+          zBtn.classList.add('opacity-50');
+        }
+      });
+
+      el.feedbackCard.classList.remove('hidden');
+
+      if (isRight) {
+        const bonus = via === 'motion' ? 5 : 0;
+        const points = (gameState.hintUsed ? 15 : 20) + bonus;
+        gameState.score += points;
+        gameState.correctCount += 1;
+        el.feedbackCard.className = 'rounded-2xl p-4 border-2 text-xs sm:text-sm leading-relaxed bg-emerald-50 border-emerald-400';
+        el.feedbackTitle.className = 'font-extrabold text-sm sm:text-base mb-1 text-emerald-700';
+        el.feedbackTitle.textContent = `🎉 เยี่ยมเลย! ถูกต้อง (+${points} คะแนน${bonus ? ' โบนัสขยับตัว!' : ''})`;
+        el.feedbackDetail.textContent = q.explanation;
+        el.mascotCheerText.textContent = 'เก่งมากๆ เลยเหมียว!';
+        notify(`สุดยอด! ตอบถูก +${points} คะแนน`, 'success');
+      } else {
+        el.feedbackCard.className = 'rounded-2xl p-4 border-2 text-xs sm:text-sm leading-relaxed bg-rose-50 border-rose-400';
+        el.feedbackTitle.className = 'font-extrabold text-sm sm:text-base mb-1 text-rose-700';
+        el.feedbackTitle.textContent = `💖 ยังไม่ใช่นะ คำตอบที่ถูกคือ ${q.answer}`;
+        el.feedbackDetail.textContent = q.explanation;
+        el.mascotCheerText.textContent = 'ดูวิธีคิดแล้วสู้ต่อนะ!';
+        notify(`คำตอบที่ถูกคือ ${q.answer}`, 'error');
+      }
+
+      syncHud();
+      el.nextBtn.classList.remove('hidden');
+      el.nextBtn.textContent = gameState.index + 1 < gameState.deck.length ? 'ไปข้อถัดไปเลย! 🎉' : 'ดูรางวัลสรุปผล 🏆';
+    }
+
+    function showSummary() {
+      el.gameArea.classList.add('hidden');
+      el.summaryCard.classList.remove('hidden');
+      const total = gameState.deck.length;
+      const pct = total ? gameState.correctCount / total : 0;
+
+      el.summaryBadgeText.textContent =
+        pct >= 0.85
+          ? '🏆 ยอดอัจฉริยะรูปสี่เหลี่ยม AR ขยับเก่ง คิดไว ป.5!'
+          : pct >= 0.6
+          ? '🌟 นักสำรวจรูปสี่เหลี่ยมแสนน่ารัก ป.5'
+          : '🎈 นักผจญภัยตัวน้อยฝึกหัด ป.5';
+
+      el.summaryScore.textContent = gameState.score;
+      el.summaryCorrect.textContent = `${gameState.correctCount}/${total}`;
+      el.summaryMoves.textContent = `${gameState.moveCount} ครั้ง`;
+    }
+
+    function startSession(mode = gameState.mode) {
+      gameState.mode = mode;
+      gameState.deck = buildDeck(mode);
+      gameState.index = 0;
+      gameState.score = 0;
+      gameState.moveCount = 0;
+      gameState.correctCount = 0;
+      gameState.answered = false;
+      gameState.hintUsed = false;
+
+      el.summaryCard.classList.add('hidden');
+      el.gameArea.classList.remove('hidden');
+      renderQuestion();
+    }
+
+    /**
+     * ตรวจจับการขยับร่างกายผ่านกล้องเว็บแคมแบบเบาสบาย (Frame Differencing ใน 4 โซน)
+     * ไม่ต้องพึ่งพาโมเดลภายนอกขนาดใหญ่ และทำงานได้ลื่นไหลบนมือถือและคอมพิวเตอร์
+     */
+    function processMotionFrame() {
+      if (!gameState.cameraOn || gameState.answered) {
+        resetZoneBars();
+        return;
+      }
+
+      const video = el.motionVideo;
+      if (video.readyState < 2) return;
+
+      const canvas = el.motionDiffCanvas;
+      const w = 160;
+      const h = 120;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      // วาดภาพแบบกลับซ้าย-ขวาให้ตรงกับมุมมองกระจกของผู้เรียน
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, -w, 0, w, h);
+      ctx.restore();
+
+      const frame = ctx.getImageData(0, 0, w, h).data;
+      if (!gameState.prevFrame) {
+        gameState.prevFrame = new Uint8ClampedArray(frame);
+        return;
+      }
+
+      const zoneEnergy = [0, 0, 0, 0];
+      const zonePixels = [0, 0, 0, 0];
+
+      for (let y = 0; y < h; y++) {
+        const rowTop = y < h / 2;
+        for (let x = 0; x < w; x++) {
+          const colLeft = x < w / 2;
+          const zIdx = rowTop ? (colLeft ? 0 : 1) : (colLeft ? 2 : 3);
+          const idx = (y * w + x) * 4;
+          const diff =
+            Math.abs(frame[idx] - gameState.prevFrame[idx]) +
+            Math.abs(frame[idx + 1] - gameState.prevFrame[idx + 1]) +
+            Math.abs(frame[idx + 2] - gameState.prevFrame[idx + 2]);
+
+          if (diff > 55) {
+            zoneEnergy[zIdx] += 1;
+          }
+          zonePixels[zIdx] += 1;
+        }
+      }
+
+      gameState.prevFrame.set(frame);
+
+      // อัปเดตแถบความคืบหน้าในโซนที่มีการขยับชัดเจน
+      for (let z = 0; z < 4; z++) {
+        const ratio = zonePixels[z] ? zoneEnergy[z] / zonePixels[z] : 0;
+        if (ratio > 0.045) {
+          gameState.zoneHoldProgress[z] = Math.min(100, gameState.zoneHoldProgress[z] + 10);
+        } else {
+          gameState.zoneHoldProgress[z] = Math.max(0, gameState.zoneHoldProgress[z] - 5);
+        }
+
+        if (zoneProgressBars[z]) {
+          zoneProgressBars[z].style.width = `${gameState.zoneHoldProgress[z]}%`;
+        }
+
+        if (gameState.zoneHoldProgress[z] >= 100) {
+          const currentQ = gameState.deck[gameState.index];
+          const chosen = currentQ && currentQ.choices[z];
+          if (chosen) {
+            submitAnswer(chosen, 'motion');
+            break;
+          }
+        }
+      }
+    }
+
+    async function toggleMotionCamera() {
+      if (gameState.cameraOn) {
+        stopMotionCamera();
+        notify('ปิดกล้อง AR แล้ว กลับสู่โหมดจำลอง AR ขยับตัว', 'sky');
+        return;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        notify('อุปกรณ์นี้ไม่รองรับกล้อง สามารถคลิก/แตะหรือใช้ปุ่ม A,B,C,D เล่นได้เลย', 'warn');
+        return;
+      }
+
+      try {
+        el.camBtnText.textContent = 'กำลังเปิดกล้อง...';
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: false
+        });
+        gameState.stream = stream;
+        gameState.cameraOn = true;
+        gameState.prevFrame = null;
+        resetZoneBars();
+
+        el.motionVideo.srcObject = stream;
+        el.motionVideo.classList.remove('hidden');
+        el.cameraSoftOverlay.classList.remove('hidden');
+        el.arStage.classList.remove('pastel-ar-bg');
+
+        el.camBtnIcon.textContent = '⏹️';
+        el.camBtnText.textContent = 'ปิดกล้อง AR';
+        el.motionStatusDot.className = 'w-3 h-3 rounded-full bg-emerald-500 animate-ping';
+        el.motionStatusText.textContent = 'เปิดกล้อง AR แล้ว! โบกมือหรือขยับตัวค้างบนช่องคำตอบ';
+
+        if (gameState.motionTimer) clearInterval(gameState.motionTimer);
+        gameState.motionTimer = setInterval(processMotionFrame, 110);
+        notify('เปิดกล้อง AR ขยับตัวสำเร็จ! ลองโบกมือที่ช่องคำตอบดูสิ', 'success');
+      } catch (err) {
+        console.warn('Motion camera fallback:', err);
+        el.camBtnIcon.textContent = '📹';
+        el.camBtnText.textContent = 'เปิดกล้อง AR ขยับตัว';
+        notify('ยังไม่ได้อนุญาตใช้กล้อง สามารถแตะ/คลิกการ์ตูนคำตอบหรือกดปุ่ม A-D ได้เลย!', 'warn');
+      }
+    }
+
+    function stopMotionCamera() {
+      if (gameState.motionTimer) {
+        clearInterval(gameState.motionTimer);
+        gameState.motionTimer = null;
+      }
+      if (gameState.stream) {
+        gameState.stream.getTracks().forEach(t => t.stop());
+        gameState.stream = null;
+      }
+      gameState.cameraOn = false;
+      gameState.prevFrame = null;
+      resetZoneBars();
+
+      el.motionVideo.srcObject = null;
+      el.motionVideo.classList.add('hidden');
+      el.cameraSoftOverlay.classList.add('hidden');
+      el.arStage.classList.add('pastel-ar-bg');
+
+      el.camBtnIcon.textContent = '📹';
+      el.camBtnText.textContent = 'เปิดกล้อง AR ขยับตัว';
+      el.motionStatusDot.className = 'w-3 h-3 rounded-full bg-amber-400';
+      el.motionStatusText.textContent = 'โหมดจำลอง AR ขยับตัว • โบกมือหรือคลิก/แตะที่การ์ตูนคำตอบได้เลย!';
+    }
+
+    // คลิก/แตะที่โซน AR ทั้ง 4 มุม (นับเป็นการขยับแตะเป้า AR ด้วย)
+    zoneButtons.forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        if (gameState.answered) return;
+        const q = gameState.deck[gameState.index];
+        if (!q || !q.choices[idx]) return;
+        gameState.moveCount += 1;
+        submitAnswer(q.choices[idx], 'motion');
+      });
+    });
+
+    // รองรับปุ่มคีย์บอร์ด A, B, C, D สำหรับช่วยทดสอบหรือเล่นบนคอมพิวเตอร์
+    window.addEventListener('keydown', (e) => {
+      if (gameState.answered) return;
+      const key = e.key.toLowerCase();
+      const map = { a: 0, b: 1, c: 2, d: 3 };
+      if (key in map) {
+        const q = gameState.deck[gameState.index];
+        if (q && q.choices[map[key]]) {
+          gameState.moveCount += 1;
+          submitAnswer(q.choices[map[key]], 'motion');
+        }
+      }
+    });
+
+    el.modeAllBtn.addEventListener('click', () => startSession('all'));
+    el.modePerimeterBtn.addEventListener('click', () => startSession('perimeter'));
+    el.modeAreaBtn.addEventListener('click', () => startSession('area'));
+    el.toggleMotionCamBtn.addEventListener('click', toggleMotionCamera);
+
+    el.toggleFormulaBtn.addEventListener('click', () => {
+      el.formulaPanel.classList.toggle('hidden');
+    });
+    el.closeFormulaBtn.addEventListener('click', () => {
+      el.formulaPanel.classList.add('hidden');
+    });
+
+    el.toggleGithubGuideBtn.addEventListener('click', () => {
+      el.githubGuidePanel.classList.toggle('hidden');
+    });
+    el.closeGithubGuideBtn.addEventListener('click', () => {
+      el.githubGuidePanel.classList.add('hidden');
+    });
+
+    el.copyEmbedBtn.addEventListener('click', () => {
+      const text = el.embedSnippetCode.textContent || '';
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand('copy');
+        notify('คัดลอกโค้ด <iframe> สำหรับฝังลงเว็บแล้ว!', 'success');
+      } catch (e) {
+        notify('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาคัดลอกข้อความด้วยตนเอง', 'warn');
+      }
+      document.body.removeChild(temp);
+    });
+
+    el.hintBtn.addEventListener('click', () => {
+      if (gameState.hintUsed || gameState.answered) return;
+      const q = gameState.deck[gameState.index];
+      if (!q) return;
+      gameState.hintUsed = true;
+      gameState.score = Math.max(0, gameState.score - 5);
+      syncHud();
+      el.hintBox.textContent = `💡 คำใบ้จากน้องแมว: ${q.hint}`;
+      el.hintBox.classList.remove('hidden');
+      el.hintBtn.disabled = true;
+      el.hintBtn.classList.add('opacity-50');
+      notify('เปิดคำใบ้แล้ว (-5 คะแนน)', 'warn');
+    });
+
+    el.nextBtn.addEventListener('click', () => {
+      if (gameState.index + 1 < gameState.deck.length) {
+        gameState.index += 1;
+        renderQuestion();
+      } else {
+        showSummary();
+      }
+    });
+
+    el.restartBtn.addEventListener('click', () => {
+      startSession(gameState.mode);
+      notify('เริ่มเกมใหม่แล้วเหมียว~', 'pink');
+    });
+
+    el.playAgainBtn.addEventListener('click', () => {
+      startSession(gameState.mode);
+    });
+
+    window.addEventListener('beforeunload', stopMotionCamera);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      startSession('all');
+    });
+  </script>
+</body>
+</html>
